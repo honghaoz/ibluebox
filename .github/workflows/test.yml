@@ -1,20 +1,19 @@
 name: test
 on:
-  push:
-    branches-ignore:
-      - "github-actions/**" # ignore github-actions branches
-      - "dependabot/**" # ignore dependabot branches
-  pull_request: # any pull request against any branch
   workflow_dispatch: # manual trigger
-  schedule:
-    # ┌───────────── minute (0 - 59)
-    # │ ┌───────────── hour (0 - 23)
-    # │ │ ┌───────────── day of the month (1 - 31)
-    # │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
-    # │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
-    # │ │ │ │ │
-    # * * * * *
-    - cron: "0 15 * * *" # every day at 15:00 UTC (7:00 PST, 8:00 PDT)
+    inputs:
+      triggered_by:
+        description: 'Repository that triggered this build'
+        required: false
+        default: 'manual'
+      commit_sha:
+        description: 'Commit SHA from triggering repo'
+        required: false
+        default: 'N/A'
+      commit_message:
+        description: 'Commit message from triggering repo'
+        required: false
+        default: 'N/A'
 
 env:
   TERM: xterm-256color
@@ -30,6 +29,13 @@ jobs:
     timeout-minutes: 30
     runs-on: ${{ vars.MACOS }}
     steps:
+      - name: Display trigger information
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "🔔 Build triggered by: ${{ github.event.inputs.triggered_by }}"
+          echo "📝 Commit SHA: ${{ github.event.inputs.commit_sha }}"
+          echo "💬 Commit message: ${{ github.event.inputs.commit_message }}"
+
       - name: Check out current repository
         uses: actions/checkout@v4
           
