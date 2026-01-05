@@ -6,6 +6,19 @@ on:
       - "dependabot/**" # ignore dependabot branches
   pull_request: # any pull request against any branch
   workflow_dispatch: # manual trigger
+    inputs:
+      triggered_by:
+        description: 'Repository that triggered this build'
+        required: false
+        default: 'manual'
+      commit_sha:
+        description: 'Commit SHA from triggering repo'
+        required: false
+        default: 'N/A'
+      commit_message:
+        description: 'Commit message from triggering repo'
+        required: false
+        default: 'N/A'
   schedule:
     # ┌───────────── minute (0 - 59)
     # │ ┌───────────── hour (0 - 23)
@@ -30,6 +43,13 @@ jobs:
     timeout-minutes: 30
     runs-on: ${{ vars.MACOS }}
     steps:
+      - name: Display trigger information
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "🔔 Build triggered by: ${{ github.event.inputs.triggered_by }}"
+          echo "📝 Commit SHA: ${{ github.event.inputs.commit_sha }}"
+          echo "💬 Commit message: ${{ github.event.inputs.commit_message }}"
+
       - name: Check out current repository
         uses: actions/checkout@v4
           
