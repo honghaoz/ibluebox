@@ -1,0 +1,60 @@
+name: bootstrap
+description: 'Bootstrap the bluebox project with environment setup'
+inputs:
+  personal-access-token:
+    description: 'The personal access token for private repository access'
+    required: true
+  artifacts-s3-endpoint:
+    description: 'artifacts S3 endpoint'
+    required: true
+  artifacts-s3-access-key-id:
+    description: 'artifacts S3 access key ID'
+    required: true
+  artifacts-s3-secret-access-key:
+    description: 'artifacts S3 secret access key'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Check out honghaoz/bluebox repository
+      uses: actions/checkout@v4
+      with:
+        repository: honghaoz/bluebox
+        token: ${{ inputs.personal-access-token }}
+        fetch-depth: 0
+        submodules: recursive
+        path: bluebox
+
+    - name: Set up environment variables
+      shell: bash
+      run: |
+        # set environment variables
+        export BLUEBOX_DIR="$GITHUB_WORKSPACE/bluebox" # make it available to the rest of the script
+        echo "BLUEBOX_DIR=$BLUEBOX_DIR" >> $GITHUB_ENV # make it available to all workflow steps
+
+        cd "$BLUEBOX_DIR"
+
+        # create artifacts/.env file
+        mkdir -p artifacts
+        cat > artifacts/.env << 'EOF'
+        endpoint=${{ inputs.artifacts-s3-endpoint }}
+        accessKeyId=${{ inputs.artifacts-s3-access-key-id }}
+        secretAccessKey=${{ inputs.artifacts-s3-secret-access-key }}
+        httpRequestTimeoutSeconds=300
+        EOF
+    
+    - name: Restore artifacts cache
+      uses: actions/cache@v4
+      id: artifacts-cache
+      with:
+        path: |
+          bluebox/artifacts/artifact
+          bluebox/artifacts/cache
+        key: ${{ runner.os }}-artifacts-${{ hashFiles('bluebox/artifacts/artifact', 'bluebox/artifacts/artifacts.json') }}
+        restore-keys: ${{ runner.os }}-artifacts-
+
+    - name: Bootstrap
+      shell: bash
+      run: |
+        cd "$BLUEBOX_DIR"
+        make ci-bootstrap

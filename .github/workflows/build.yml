@@ -1,0 +1,47 @@
+name: build
+on:
+  push:
+    branches-ignore:
+      - "github-actions/**" # ignore github-actions branches
+      - "dependabot/**" # ignore dependabot branches
+  pull_request: # any pull request against any branch
+  workflow_dispatch: # manual trigger
+  schedule:
+    # ┌───────────── minute (0 - 59)
+    # │ ┌───────────── hour (0 - 23)
+    # │ │ ┌───────────── day of the month (1 - 31)
+    # │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+    # │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+    # │ │ │ │ │
+    # * * * * *
+    - cron: "30 14 * * *" # every day at 14:30 UTC (6:30 PST, 7:30 PDT)
+
+env:
+  TERM: xterm-256color
+  DEVELOPER_DIR: /Applications/Xcode_${{ vars.XCODE_VERSION }}.app/Contents/Developer
+
+jobs:
+  build:
+    name: Build
+    strategy:
+      fail-fast: false
+      matrix:
+        build-target: [frameworks, tools]
+    timeout-minutes: 30
+    runs-on: ${{ vars.MACOS }}
+    steps:
+      - name: Check out current repository
+        uses: actions/checkout@v4
+          
+      - name: Bootstrap
+        uses: ./.github/actions/bootstrap
+        with:
+          personal-access-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          artifacts-s3-endpoint: ${{ secrets.ARTIFACTS_S3_ENDPOINT }}
+          artifacts-s3-access-key-id: ${{ secrets.ARTIFACTS_S3_ACCESS_KEY_ID }}
+          artifacts-s3-secret-access-key: ${{ secrets.ARTIFACTS_S3_SECRET_ACCESS_KEY }}
+
+      - name: Build
+        run: |
+          cd $BLUEBOX_DIR
+          make build-${{ matrix.build-target }}
