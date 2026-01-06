@@ -69,6 +69,42 @@ jobs:
           artifacts-s3-access-key-id: ${{ secrets.ARTIFACTS_S3_ACCESS_KEY_ID }}
           artifacts-s3-secret-access-key: ${{ secrets.ARTIFACTS_S3_SECRET_ACCESS_KEY }}
 
+      - name: Generate cache key
+        id: cache-key
+        run: |
+          if [[ "${{ matrix.build-target }}" == packages/* ]] || [[ "${{ matrix.build-target }}" == tools/* ]]; then
+            # For SPM packages: use Package.resolved
+            if [ -f "bluebox/${{ matrix.build-target }}/Package.resolved" ]; then
+              HASH=$(cat "bluebox/${{ matrix.build-target }}/Package.resolved" | sha256sum | cut -d' ' -f1)
+            else
+              # Fallback to Package.swift if Package.resolved doesn't exist
+              HASH=$(cat "bluebox/${{ matrix.build-target }}/Package.swift" | sha256sum | cut -d' ' -f1)
+            fi
+            echo "spm-package-cache-hash=$HASH" >> $GITHUB_OUTPUT
+            echo "Generated SPM package cache hash: $HASH"
+          fi
+
+      - name: Restore SPM package build cache
+        uses: actions/cache@v4
+        id: spm-package-build-cache
+        if: startsWith(matrix.build-target, 'packages/') || startsWith(matrix.build-target, 'tools/')
+        with:
+          path: |
+            bluebox/${{ matrix.build-target }}/.build
+          key: ${{ runner.os }}-${{ matrix.build-target }}-spm-package-build-${{ steps.cache-key.outputs.spm-package-cache-hash }}
+          restore-keys: ${{ runner.os }}-${{ matrix.build-target }}-spm-package-build-
+
+      - name: Restore Xcode derived data cache
+        uses: actions/cache@v4
+        id: xcode-derived-data-cache
+        if: startsWith(matrix.build-target, 'apps/')
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-${{ matrix.build-target }}-xcode-derived-data- # not use .pbxproj to generate cache key as it can be sensitive
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.build-target }}-xcode-derived-data-
+
       - name: Build
         run: |
           cd $BLUEBOX_DIR

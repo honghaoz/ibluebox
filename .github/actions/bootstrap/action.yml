@@ -53,6 +53,18 @@ runs:
         key: ${{ runner.os }}-artifacts-${{ hashFiles('bluebox/artifacts/artifact', 'bluebox/artifacts/artifacts.json') }}
         restore-keys: ${{ runner.os }}-artifacts-
 
+    - name: Restore bin cache
+      uses: actions/cache@v4
+      id: bin-cache
+      with:
+        path: |
+          bluebox/bin/swiftformat
+          bluebox/bin/swiftlint
+          bluebox/bin/xcbeautify
+          bluebox/bin/xcodegen
+        key: ${{ runner.os }}-bin-${{ hashFiles('bluebox/bin/.versions') }}
+        restore-keys: ${{ runner.os }}-bin-
+
     - name: Bootstrap
       shell: bash
       run: |
