@@ -25,7 +25,29 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test-target: [frameworks, apps, tools]
+        test-target: [
+          packages/ChouTiExt,
+          packages/ChouTiUIExt,
+          packages/ChouTiSwiftUI,
+          packages/ChouTiRx,
+          packages/ChouTiArchive,
+          packages/DataAccess,
+          packages/RemoteAccess,
+          packages/AppStore,
+          packages/Files,
+          packages/CLI,
+          apps/wazer,
+          apps/say-no-to-notch,
+          apps/aqua-menu-bar,
+          apps/git-streaks,
+          apps/menubar-ip,
+          apps/rive-play,
+          tools/artifact,
+          tools/avcut,
+          tools/git2,
+          tools/startup,
+          tools/zsh2,
+        ]
     timeout-minutes: 30
     runs-on: ${{ vars.MACOS }}
     steps:
@@ -50,4 +72,4 @@ jobs:
       - name: Test
         run: |
           cd $BLUEBOX_DIR
-          make test-${{ matrix.test-target }}
+          make test -C ${{ matrix.test-target }}
