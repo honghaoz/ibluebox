@@ -101,9 +101,10 @@ jobs:
         with:
           path: |
             ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-${{ matrix.build-target }}-xcode-derived-data- # not use .pbxproj to generate cache key as it can be sensitive
+            !~/Library/Developer/Xcode/DerivedData/**/ModuleCache.noindex
+          key: ${{ runner.os }}-${{ matrix.build-target }}-xcode-derived-data-${{ vars.XCODE_VERSION }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.build-target }}-xcode-derived-data-
+            ${{ runner.os }}-${{ matrix.build-target }}-xcode-derived-data-${{ vars.XCODE_VERSION }}
 
       - name: Build
         run: |
