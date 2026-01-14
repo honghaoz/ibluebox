@@ -50,7 +50,7 @@ runs:
         path: |
           bluebox/artifacts/artifact
           bluebox/artifacts/cache
-        key: ${{ runner.os }}-artifacts-${{ hashFiles('bluebox/artifacts/artifact', 'bluebox/artifacts/artifacts.json') }}
+        key: ${{ runner.os }}-artifacts-${{ hashFiles('bluebox/artifacts/artifact', 'bluebox/artifacts/.artifact-version', 'bluebox/artifacts/artifacts.json') }}
         restore-keys: ${{ runner.os }}-artifacts-
 
     - name: Restore bin cache
