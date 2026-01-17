@@ -47,6 +47,7 @@ jobs:
           tools/git2,
           tools/startup,
           tools/zsh2,
+          playgrounds/chouti-playground,
         ]
     timeout-minutes: 30
     runs-on: ${{ vars.MACOS }}
@@ -97,7 +98,7 @@ jobs:
       - name: Restore Xcode derived data cache
         uses: actions/cache@v4
         id: xcode-derived-data-cache
-        if: startsWith(matrix.build-target, 'apps/')
+        if: startsWith(matrix.build-target, 'apps/') || startsWith(matrix.build-target, 'playgrounds/')
         with:
           path: |
             ~/Library/Developer/Xcode/DerivedData
