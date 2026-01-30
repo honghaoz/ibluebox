@@ -102,10 +102,19 @@ jobs:
         with:
           path: |
             ~/Library/Developer/Xcode/DerivedData
-            !~/Library/Developer/Xcode/DerivedData/**/ModuleCache.noindex
           key: ${{ runner.os }}-${{ matrix.build-target }}-xcode-derived-data-${{ vars.XCODE_VERSION }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.build-target }}-xcode-derived-data-${{ vars.XCODE_VERSION }}
+
+      - name: Clear Xcode module cache
+        if: startsWith(matrix.build-target, 'apps/') || startsWith(matrix.build-target, 'playgrounds/')
+        run: |
+          # actions/cache doesn't support exclusion globs; ensure ModuleCache.noindex is clean
+          DERIVED_DATA_DIR=~/Library/Developer/Xcode/DerivedData
+          if [ -d "$DERIVED_DATA_DIR" ]; then
+            rm -rf "$DERIVED_DATA_DIR/ModuleCache.noindex"
+            find "$DERIVED_DATA_DIR" -type d -name ModuleCache.noindex -prune -exec rm -rf {} +
+          fi
 
       - name: Build
         run: |
