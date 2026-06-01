@@ -59,7 +59,7 @@ jobs:
           echo "💬 Commit message: ${{ github.event.inputs.commit_message }}"
 
       - name: Check out current repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
           
       - name: Bootstrap
         uses: ./.github/actions/bootstrap
@@ -85,7 +85,7 @@ jobs:
           fi
 
       - name: Restore SPM package build cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: spm-package-build-cache
         if: startsWith(matrix.test-target, 'packages/') || startsWith(matrix.test-target, 'tools/')
         with:
@@ -95,7 +95,7 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ matrix.test-target }}-spm-package-build-
 
       - name: Restore Xcode derived data cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: xcode-derived-data-cache
         if: startsWith(matrix.test-target, 'apps/')
         with:
